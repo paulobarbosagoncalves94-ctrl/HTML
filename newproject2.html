@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Nosso Cofrinho Espacial 🚀 - Com Metas</title>
+    <style>
+        :root {
+            --cor-fundo: #1a1a2e;
+            --cor-card: #16213e;
+            --cor-texto: #ffffff;
+            --cor-ganho: #00f2fe;
+            --cor-gasto: #ff4b2b;
+            --cor-detalhe: #f8b500;
+        }
+
+        body { font-family: 'Comic Sans MS', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { max-width: 400px; width: 100%; background: var(--cor-card); padding: 25px; border-radius: 30px; border: 3px solid var(--cor-detalhe); text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        
+        /* Estilo da Meta */
+        .meta-container { margin-top: 20px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 20px; }
+        .barra-fundo { background: #333; height: 20px; border-radius: 10px; margin-top: 10px; overflow: hidden; border: 1px dotted var(--cor-detalhe); }
+        .barra-progresso { background: linear-gradient(90deg, #f8b500, #ff4b2b); height: 100%; width: 0%; transition: width 0.5s ease-in-out; }
+        
+        .saldo-box { font-size: 2.8em; margin: 15px 0; color: var(--cor-ganho); text-shadow: 0 0 10px var(--cor-ganho); }
+        input { padding: 12px; width: 70%; border-radius: 50px; border: none; margin-bottom: 10px; font-size: 1em; text-align: center; }
+        .botoes { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
+        button { padding: 12px 20px; cursor: pointer; border: none; border-radius: 50px; color: white; font-weight: bold; transition: 0.2s; }
+        button:active { transform: scale(0.95); }
+        .btn-ganhar { background: #27ae60; }
+        .btn-gastar { background: #e74c3c; }
+        .btn-meta { background: var(--cor-detalhe); color: #1a1a2e; width: 100%; margin-top: 5px; }
+
+        .historico-section { margin-top: 20px; text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; font-size: 0.8em; }
+        #lista-historico { list-style: none; padding: 0; max-height: 120px; overflow-y: auto; }
+        .item-transacao { display: flex; justify-content: space-between; padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body onload="carregarDados()">
+
+    <div class="container">
+        <h1>🚀 Missão Poupança</h1>
+        
+        <div class="saldo-box">
+            <span id="valor-saldo">0.00</span>€
+        </div>
+
+        <div class="meta-container">
+            <strong>🎯 Objetivo: </strong> <span id="txt-nome-meta">Nenhum</span><br>
+            <strong>Custo: </strong> <span id="txt-custo-meta">0.00</span>€
+            <div class="barra-fundo">
+                <div id="barra" class="barra-progresso"></div>
+            </div>
+            <small id="txt-percentagem">0% concluído</small>
+        </div>
+
+        <hr style="margin: 20px 0; border: 0.5px solid #333;">
+
+        <input type="text" id="meta-nome-input" placeholder="O que queres comprar?">
+        <input type="number" id="meta-valor-input" placeholder="Quanto custa?">
+        <button class="btn-meta" onclick="definirMeta()">Definir Nova Meta 🚩</button>
+
+        <hr style="margin: 20px 0; border: 0.5px solid #333;">
+
+        <input type="number" id="valor-input" placeholder="Valor em €">
+        <div class="botoes">
+            <button class="btn-ganhar" onclick="adicionar(true)">RECEBER 💰</button>
+            <button class="btn-gastar" onclick="adicionar(false)">GASTAR 🛒</button>
+        </div>
+
+        <div class="historico-section">
+            <h3>📖 Diário de Bordo</h3>
+            <ul id="lista-historico"></ul>
+            <button onclick="limparTudo()" style="background:none; color:gray; cursor:pointer;">Apagar Dados</button>
+        </div>
+    </div>
+
+    <script>
+        const somSucesso = new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3');
+        const somMeta = new Audio('https://www.soundjay.com/misc/sounds/magic-chime-01.mp3');
+
+        let saldo = 0.0;
+        let transacoes = [];
+        let meta = { nome: "Nenhum", custo: 0.0 };
+
+        function carregarDados() {
+            const saldoS = localStorage.getItem('saldoC');
+            const histS = localStorage.getItem('histC');
+            const metaS = localStorage.getItem('metaC');
+
+            if (saldoS) saldo = parseFloat(saldoS);
+            if (histS) transacoes = JSON.parse(histS);
+            if (metaS) meta = JSON.parse(metaS);
+
+            atualizarEcra();
+        }
+
+        function definirMeta() {
+            const nome = document.getElementById('meta-nome-input').value;
+            const custo = parseFloat(document.getElementById('meta-valor-input').value);
+
+            if (nome && custo > 0) {
+                meta = { nome: nome, custo: custo };
+                salvarEAtualizar();
+                document.getElementById('meta-nome-input').value = "";
+                document.getElementById('meta-valor-input').value = "";
+            }
+        }
+
+        function adicionar(ganho) {
+            const valInput = document.getElementById('valor-input');
+            const valor = parseFloat(valInput.value);
+
+            if (isNaN(valor) || valor <= 0) return;
+            if (!ganho && valor > saldo) { alert("Saldo insuficiente!"); return; }
+
+            saldo = ganho ? saldo + valor : saldo - valor;
+            transacoes.unshift({ 
+                txt: (ganho ? '⭐ ' : '☄️ ') + valor.toFixed(2) + "€", 
+                cor: ganho ? '#00f2fe' : '#ff4b2b' 
+            });
+
+            if (ganho) somSucesso.play();
+            if (saldo >= meta.custo && meta.custo > 0) somMeta.play();
+
+            valInput.value = "";
+            salvarEAtualizar();
+        }
+
+        function salvarEAtualizar() {
+            localStorage.setItem('saldoC', saldo);
+            localStorage.setItem('histC', JSON.stringify(transacoes));
+            localStorage.setItem('metaC', JSON.stringify(meta));
+            atualizarEcra();
+        }
+
+        function atualizarEcra() {
+            document.getElementById('valor-saldo').innerText = saldo.toFixed(2);
+            document.getElementById('txt-nome-meta').innerText = meta.nome;
+            document.getElementById('txt-custo-meta').innerText = meta.custo.toFixed(2);
+
+            // Cálculo da Barra
+            let perc = 0;
+            if (meta.custo > 0) {
+                perc = (saldo / meta.custo) * 100;
+                if (perc > 100) perc = 100;
+            }
+            document.getElementById('barra').style.width = perc + "%";
+            document.getElementById('txt-percentagem').innerText = Math.floor(perc) + "% concluído";
+
+            // Renderizar Histórico
+            const lista = document.getElementById('lista-historico');
+            lista.innerHTML = "";
+            transacoes.slice(0, 5).forEach(t => {
+                const item = document.createElement('li');
+                item.className = 'item-transacao';
+                item.innerHTML = `<span style="color:${t.cor}">${t.txt}</span>`;
+                lista.appendChild(item);
+            });
+        }
+
+        function limparTudo() {
+            if(confirm("Reiniciar Missão?")) { localStorage.clear(); location.reload(); }
+        }
+    </script>
+</body>
+</html>
