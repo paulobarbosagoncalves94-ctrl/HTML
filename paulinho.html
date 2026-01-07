@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAULINHO TECH | Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --neon-blue: #0407aa; 
+            --neon-glow: 0 0 10px #00f3ff, 0 0 20px #00f3ff;
+            --bg-black: #000000;
+            --card-dark: #111111;
+            --pure-white: #ffffff;
+        }
+        
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: var(--bg-black); 
+            padding: 20px; 
+            color: var(--pure-white); 
+            margin: 0;
+        }
+
+        .container { max-width: 450px; margin: auto; }
+
+
+
+      
+
+        /* Espaço para Imagem/Logo */
+     
+
+        
+        .logo-area {
+            width: 100%;
+            height: 120px;
+            border: 2px dashed var(--neon-blue);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: none ;
+        }
+
+        .logo-area img {
+            
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+           
+        }
+
+        h1 { 
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+            text-align: center; 
+            color: var(--neon-blue);
+            text-shadow: var(--neon-glow);
+            margin: 10px 0 30px 0;
+            font-size: 1.8rem;
+        }
+
+        .card { 
+            background: var(--card-dark); 
+            padding: 25px; 
+            border-radius: 15px; 
+            border: 1px solid #222;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 25px; 
+        }
+
+        label { 
+            font-size: 11px; 
+            text-transform: uppercase; 
+            color: var(--neon-blue); 
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        input, select { 
+            width: 100%; padding: 12px; margin: 8px 0 18px 0; 
+            border: 1px solid #333; border-radius: 8px; 
+            background: #000; color: white; font-family: 'Outfit';
+            outline: none; transition: 0.3s;
+        }
+
+        input:focus { border-color: var(--neon-blue); box-shadow: 0 0 5px var(--neon-blue); }
+
+        button.btn-save { 
+            background: var(--neon-blue); color: #000; 
+            border: none; font-weight: 800; cursor: pointer; 
+            text-transform: uppercase; padding: 15px;
+            border-radius: 8px; width: 100%;
+            box-shadow: var(--neon-glow);
+        }
+
+        .item-conserto { 
+            background: var(--card-dark); padding: 18px; 
+            border: 1px solid #222; margin-bottom: 15px; 
+            border-radius: 12px; position: relative;
+            transition: 0.3s;
+        }
+
+        .status-badge {
+            font-size: 10px; padding: 3px 8px; border-radius: 20px;
+            text-transform: uppercase; font-weight: bold; margin-top: 5px; display: inline-block;
+        }
+
+        .badge-pendente { background: #444; color: #fff; }
+        .badge-pronto { background: #22c55e; color: #000; box-shadow: 0 0 10px #22c55e; }
+
+        .btn-whatsapp { 
+            background: #25d366; color: white; padding: 10px; 
+            text-decoration: none; text-align: center; border-radius: 8px; 
+            font-size: 13px; display: block; margin-top: 15px; font-weight: bold;
+        }
+
+        .delete-btn { 
+            position: absolute; right: 15px; top: 15px;
+            background: none; border: none; color: #ff4444; font-weight: bold; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo-area">
+        <img src="./WhatsApp Image 2026-01-07 at 00.34.32.jpeg" alt="Logo Paulinho Tech">
+    </div>
+
+    <h1>PAULINHO TECH</h1>
+    
+    <div class="card">
+        <label>Nome do Cliente</label>
+        <input type="text" id="cliente" placeholder="Ex: João Silva">
+        
+        <label>WhatsApp (com DDD)</label>
+        <input type="number" id="telefone" placeholder="Ex: 11999999999">
+
+        <label>Aparelho / Modelo</label>
+        <input type="text" id="aparelho" placeholder="Ex: Samsung S23 Ultra">
+
+        <label>Status</label>
+        <select id="status">
+            <option value="Pendente">Aguardando Conserto 🛠️</option>
+            <option value="Pronto">Pronto para Retirada ✅</option>
+        </select>
+        
+        <button class="btn-save" onclick="adicionarConserto()">Registrar Entrada</button>
+    </div>
+
+    <div id="listaConsertos"></div>
+</div>
+
+<script>
+    let consertos = JSON.parse(localStorage.getItem('consertos_paulinho')) || [];
+
+    function renderizar() {
+        const lista = document.getElementById('listaConsertos');
+        lista.innerHTML = '';
+        
+        consertos.forEach((c, index) => {
+            const msgZap = window.encodeURIComponent(`Fala ${c.cliente}! Aqui é da Paulinho Tech. Seu ${c.aparelho} já está pronto! Pode vir buscar. 📱🔋`);
+            const linkZap = `https://wa.me/55${c.telefone}?text=${msgZap}`;
+
+            lista.innerHTML += `
+                <div class="item-conserto">
+                    <button class="delete-btn" onclick="remover(${index})">APAGAR</button>
+                    <div style="margin-right: 40px;">
+                        <span style="color:var(--neon-blue); font-size: 1.1rem; font-weight: bold;">${c.aparelho}</span><br>
+                        <span style="color:#888; font-size: 14px;">Cliente: ${c.cliente}</span><br>
+                        <span class="status-badge ${c.status === 'Pronto' ? 'badge-pronto' : 'badge-pendente'}">
+                            ${c.status}
+                        </span>
+                    </div>
+                    ${c.status === 'Pronto' ? `<a href="${linkZap}" target="_blank" class="btn-whatsapp">NOTIFICAR CLIENTE</a>` : ''}
+                </div>
+            `;
+        });
+        localStorage.setItem('consertos_paulinho', JSON.stringify(consertos));
+    }
+
+    function adicionarConserto() {
+        const cliente = document.getElementById('cliente').value;
+        const telefone = document.getElementById('telefone').value;
+        const aparelho = document.getElementById('aparelho').value;
+        const status = document.getElementById('status').value;
+
+        if(!cliente || !aparelho || !telefone) return alert("Por favor, Paulinho, preencha todos os dados!");
+
+        consertos.push({ cliente, telefone, aparelho, status });
+        renderizar();
+        
+        // Limpar campos
+        document.getElementById('cliente').value = '';
+        document.getElementById('telefone').value = '';
+        document.getElementById('aparelho').value = '';
+    }
+
+    function remover(index) {
+        if(confirm("Deseja mesmo remover esse registro?")) {
+            consertos.splice(index, 1);
+            renderizar();
+        }
+    }
+
+    renderizar();
+</script>
+
+</body>
+</html>

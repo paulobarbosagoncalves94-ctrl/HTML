@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Stark Financial System 🛰️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --stark-red: #ff0000;
+            --stark-blue: #00d2ff;
+            --stark-dark: #0a0a0a;
+            --stark-panel: #1a1a1a;
+            --stark-gold: #ffcc00;
+        }
+
+        body { 
+            font-family: 'Orbitron', sans-serif; 
+            background-color: var(--stark-dark); 
+            color: white; 
+            display: flex; justify-content: center; padding: 20px;
+            text-transform: uppercase;
+        }
+
+        .container { 
+            max-width: 500px; width: 100%; 
+            background: var(--stark-panel); 
+            padding: 25px; border-radius: 5px; 
+            border-left: 5px solid var(--stark-blue);
+            box-shadow: 0 0 30px rgba(0, 210, 255, 0.2);
+        }
+
+        h1 { color: var(--stark-blue); letter-spacing: 3px; font-size: 1.5em; }
+
+        /* Painel de Medalhas */
+        .badges { display: flex; justify-content: space-around; margin-bottom: 20px; background: #000; padding: 10px; border-radius: 5px; }
+        .badge { opacity: 0.2; filter: grayscale(1); transition: 0.5s; font-size: 1.5em; }
+        .badge.active { opacity: 1; filter: grayscale(0); text-shadow: 0 0 10px var(--stark-gold); }
+
+        .saldo-box { 
+            font-size: 3em; margin: 10px 0; color: var(--stark-blue);
+            border-bottom: 2px solid #333; padding-bottom: 10px;
+        }
+
+        /* Gráfico Simples */
+        .mini-grafico { height: 10px; display: flex; margin: 15px 0; border-radius: 5px; overflow: hidden; background: #333; }
+        #barra-ganhos { background: var(--stark-blue); width: 0%; transition: 0.5s; }
+        #barra-gastos { background: var(--stark-red); width: 0%; transition: 0.5s; }
+
+        input, select { 
+            background: #222; border: 1px solid var(--stark-blue); color: white;
+            padding: 12px; width: 90%; margin-bottom: 10px; font-family: 'Orbitron';
+        }
+
+        .btn-stark { 
+            width: 100%; padding: 15px; margin: 5px 0; cursor: pointer;
+            font-family: 'Orbitron'; font-weight: bold; border: none; transition: 0.3s;
+        }
+        .btn-add { background: var(--stark-blue); color: black; }
+        .btn-sub { background: var(--stark-red); color: white; }
+
+        .historico-section { margin-top: 20px; font-size: 0.7em; height: 150px; overflow-y: auto; border: 1px solid #333; padding: 10px; }
+        .item { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px solid #222; padding: 3px; }
+        
+        .aviso-seguranca { color: var(--stark-gold); font-size: 0.6em; margin-top: 5px; display: none; }
+    </style>
+</head>
+<body onload="carregarDados()">
+
+    <div class="container">
+        <h1>Stark Interface v1.0</h1>
+        
+        <div class="badges" id="medalhas">
+            <span class="badge" title="Poupador">🥉</span>
+            <span class="badge" title="Investidor">🥈</span>
+            <span class="badge" title="Mestre">🥇</span>
+            <span class="badge" title="Stark">💎</span>
+        </div>
+
+        <div class="saldo-box"><span id="v-saldo">0.00</span>€</div>
+        
+        <div class="mini-grafico">
+            <div id="barra-ganhos"></div>
+            <div id="barra-gastos"></div>
+        </div>
+
+        <div style="font-size: 0.7em; margin-bottom: 10px;">
+            SISTEMA DE METAS: <span id="n-meta">---</span> | <span id="p-meta">0%</span>
+        </div>
+
+        <input type="text" id="in-nome" placeholder="NOME DA META / ITEM">
+        <input type="number" id="in-valor" placeholder="VALOR €">
+        
+        <select id="in-cat">
+            <option value="💡 GERAL">CATEGORIA: GERAL</option>
+            <option value="🍕 LANCHE">CATEGORIA: LANCHE</option>
+            <option value="🎮 JOGO">CATEGORIA: JOGO</option>
+            <option value="🧸 BRINQUEDO">CATEGORIA: BRINQUEDO</option>
+        </select>
+
+        <button class="btn-stark btn-add" onclick="acao(true)">ADICIONAR CRÉDITOS</button>
+        <button class="btn-stark btn-sub" onclick="acao(false)">REGISTAR GASTO</button>
+        
+        <div id="aviso" class="aviso-seguranca">⚠️ ALERTA: GASTO ELEVADO DETETADO</div>
+
+        <div class="historico-section" id="hist"></div>
+        
+        <button onclick="limpar()" style="background:none; color:gray; border:none; cursor:pointer; font-size:0.6em; margin-top:10px;">REINICIALIZAR SISTEMA</button>
+    </div>
+
+    <script>
+        let dados = { saldo: 0, ganhos: 0, gastos: 0, hist: [], metaNome: "", metaVal: 0 };
+        const somOK = new Audio('https://www.soundjay.com/buttons/sounds/button-27.mp3');
+        const somAlerta = new Audio('https://www.soundjay.com/buttons/sounds/button-11.mp3');
+
+        function carregarDados() {
+            const save = localStorage.getItem('starkData');
+            if (save) { dados = JSON.parse(save); atualizarEcra(); }
+        }
+
+        function acao(isGanho) {
+            const v = parseFloat(document.getElementById('in-valor').value);
+            const cat = document.getElementById('in-cat').value;
+            const nome = document.getElementById('in-nome').value;
+
+            if (isNaN(v) || v <= 0) return;
+
+            if (!isGanho) {
+                if (v > dados.saldo) { somAlerta.play(); alert("SALDO INSUFICIENTE"); return; }
+                if (v > 20) { document.getElementById('aviso').style.display = 'block'; }
+                dados.gastos += v;
+                dados.saldo -= v;
+            } else {
+                dados.ganhos += v;
+                dados.saldo += v;
+                document.getElementById('aviso').style.display = 'none';
+                if(nome) { dados.metaNome = nome; dados.metaVal = v; } // Define meta se preencher nome ao ganhar
+            }
+
+            dados.hist.unshift({ t: isGanho?'IN':'OUT', v: v, c: cat, d: new Date().toLocaleDateString() });
+            somOK.play();
+            salvar();
+        }
+
+        function salvar() {
+            localStorage.setItem('starkData', JSON.stringify(dados));
+            atualizarEcra();
+        }
+
+        function atualizarEcra() {
+            document.getElementById('v-saldo').innerText = dados.saldo.toFixed(2);
+            document.getElementById('n-meta').innerText = dados.metaNome || "SEM META";
+            
+            // Gráfico e Meta
+            const totalProg = dados.ganhos + dados.gastos;
+            if (totalProg > 0) {
+                document.getElementById('barra-ganhos').style.width = (dados.ganhos/totalProg*100) + "%";
+                document.getElementById('barra-gastos').style.width = (dados.gastos/totalProg*100) + "%";
+            }
+
+            // Medalhas
+            const m = document.querySelectorAll('.badge');
+            if (dados.saldo >= 10) m[0].classList.add('active');
+            if (dados.saldo >= 50) m[1].classList.add('active');
+            if (dados.saldo >= 100) m[2].classList.add('active');
+            if (dados.ganhos >= 200) m[3].classList.add('active');
+
+            // Histórico
+            const hDiv = document.getElementById('hist');
+            hDiv.innerHTML = dados.hist.map(i => `
+                <div class="item">
+                    <span>${i.c}</span>
+                    <span style="color:${i.t=='IN'?'#00d2ff':'#ff0000'}">${i.t=='IN'?'+':'-'}${i.v.toFixed(2)}€</span>
+                </div>
+            `).join('');
+        }
+
+        function limpar() { if(confirm("APAGAR PROTOCOLO STARK?")) { localStorage.clear(); location.reload(); } }
+    </script>
+</body>
+</html>
