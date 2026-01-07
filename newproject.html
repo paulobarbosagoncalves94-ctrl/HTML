@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Meu Cofrinho Espacial 🚀 com Sons</title>
+    <style>
+        /* Mantendo o estilo anterior que gostaste */
+        :root {
+            --cor-fundo: #1a1a2e;
+            --cor-card: #16213e;
+            --cor-texto: #ffffff;
+            --cor-ganho: #00f2fe;
+            --cor-gasto: #ff4b2b;
+            --cor-detalhe: #f8b500;
+        }
+
+        body { font-family: 'Comic Sans MS', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); display: flex; justify-content: center; padding: 20px; }
+        .container { max-width: 400px; width: 100%; background: var(--cor-card); padding: 25px; border-radius: 30px; border: 3px solid var(--cor-detalhe); text-align: center; }
+        .saldo-box { font-size: 2.8em; margin: 20px 0; background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 20px; color: var(--cor-ganho); }
+        input { padding: 15px; width: 80%; border-radius: 50px; border: none; margin-bottom: 20px; font-size: 1.1em; text-align: center; }
+        .botoes { display: flex; gap: 15px; justify-content: center; }
+        button { padding: 15px 25px; cursor: pointer; border: none; border-radius: 50px; color: white; font-weight: bold; transition: 0.2s; box-shadow: 0 5px #333; }
+        button:active { transform: translateY(4px); box-shadow: 0 2px #111; }
+        .btn-ganhar { background: linear-gradient(45deg, #27ae60, #2ecc71); }
+        .btn-gastar { background: linear-gradient(45deg, #c0392b, #e74c3c); }
+        .historico-section { margin-top: 30px; text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 15px; }
+        #lista-historico { list-style: none; padding: 0; }
+        .item-transacao { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🚀 Missão Poupança</h1>
+        
+        <div class="saldo-box">
+            <span id="valor-saldo">0.00</span>€
+        </div>
+
+        <input type="number" id="valor-input" placeholder="Valor em €">
+        
+        <div class="botoes">
+            <button class="btn-ganhar" onclick="adicionar(true)">RECEBER 💰</button>
+            <button class="btn-gastar" onclick="adicionar(false)">GASTAR 🛒</button>
+        </div>
+
+        <div class="historico-section">
+            <h3>📖 Diário de Bordo</h3>
+            <ul id="lista-historico"></ul>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURAÇÃO DE SONS ---
+        // Sons de exemplo (podes trocar os links por ficheiros .mp3 teus no futuro)
+        const somSucesso = new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3');
+        const somGasto = new Audio('https://www.soundjay.com/buttons/sounds/button-3.mp3');
+        const somErro = new Audio('https://www.soundjay.com/buttons/sounds/button-10.mp3');
+
+        let saldo = 0.0;
+
+        function adicionar(ganho) {
+            const input = document.getElementById('valor-input');
+            const valor = parseFloat(input.value);
+
+            if (isNaN(valor) || valor <= 0) {
+                somErro.play();
+                return;
+            }
+
+            if (!ganho && valor > saldo) {
+                somErro.play();
+                alert("Combustível insuficiente! (Saldo baixo)");
+                return;
+            }
+
+            if (ganho) {
+                saldo += valor;
+                somSucesso.play(); // Toca som de moedas/sino
+            } else {
+                saldo -= valor;
+                somGasto.play(); // Toca som de clique
+            }
+
+            document.getElementById('valor-saldo').innerText = saldo.toFixed(2);
+            
+            const lista = document.getElementById('lista-historico');
+            const item = document.createElement('li');
+            item.className = 'item-transacao';
+            item.innerHTML = `
+                <span>${ganho ? '⭐ Recebido' : '☄️ Gasto'}</span>
+                <span style="color: ${ganho ? '#00f2fe' : '#ff4b2b'}">${ganho ? '+' : '-'}${valor.toFixed(2)}€</span>
+            `;
+            lista.insertBefore(item, lista.firstChild);
+            input.value = "";
+        }
+    </script>
+</body>
+</html>
