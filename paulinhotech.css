@@ -1,0 +1,58 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    .special-gothic-expanded-one-regular {
+  font-family: "Special Gothic Expanded One", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+    background-color: #f5f5f5;
+    color: #211277;
+    font-family: Arial, sans-serif;
+}
+div.latest {
+    background-color: #1081b6;
+    padding: 20px;
+    border-radius: 5px;
+
+}
+h2 {
+    color: #ffffff;
+    margin-bottom: 10px;
+
+}
+
+ul {
+    list-style-type: none;
+    color: #000;
+
+}
+
+li {
+    margin-bottom: 5px;
+
+}
+button {
+    background-color: #211277;
+    color: #ffffff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    
+}
+image {
+    max-width: 100%;
+    height: auto;
+    margin-top: 20px;
+    
+}
